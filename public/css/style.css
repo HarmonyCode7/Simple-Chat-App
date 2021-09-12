@@ -113,10 +113,17 @@ body {
 {
     background: black !important;
 }
-.user-connected {
-    color: #bbb;
+
+.connected,
+.disconnected {   
     font-size: 1rem; 
     align-self: center; 
     margin-left: 3rem;
     background: none;
+}
+.connected {
+    color: #ba3a1a;
+}
+.disconnected {
+    color: #bbb;
 }
