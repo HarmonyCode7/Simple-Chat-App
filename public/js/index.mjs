@@ -46,7 +46,11 @@ class ChatUi {
         }
         let chatElement = dom.makeHTMLElement('li', 
         {class: `message ${type}`});
+        let timeElement = dom.makeHTMLElement('span', {class: 'time'});
+        let d = new Date();
+        timeElement.innerText = `${d.getHours()}:${d.getMinutes()}`;
         chatElement.innerText = message;
+        chatElement.appendChild(timeElement);
         return chatElement;
     }
 }
@@ -71,21 +75,29 @@ class App {
         let message_input = dom.query('.message-input');
         let send_message_btn = dom.query('.send-message-btn');
 
-
-        chatApp.recieve(message => {
-            let uiMessage = chatUi.chatMessage(message, ChatUi.MESSAGE_RECIEVED);
-            messages.appendChild(uiMessage);
-        });
-        send_message_btn.addEventListener('click', () => {
+        let sendMessage = () => {
             let message = message_input.value;
             if(message.length < 1)
                 return;
             message_input.value = "";
             chatApp.send(message);
             let uiMessage = chatUi.chatMessage(message, ChatUi.MESSAGE_SENT);
-            messages.appendChild(uiMessage);            
+            messages.appendChild(uiMessage);
+        }
+
+        chatApp.recieve(message => {
+            let uiMessage = chatUi.chatMessage(message, ChatUi.MESSAGE_RECIEVED);
+            messages.appendChild(uiMessage);
         });
 
+        send_message_btn.addEventListener('click', sendMessage);
+
+        message_input.addEventListener('keypress', event => {
+            let isEnterKey = event.key.toLowerCase() === 'Enter'.toLowerCase();
+            if(isEnterKey) {
+                sendMessage();
+            }
+        })
 
     }
 }

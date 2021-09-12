@@ -35,17 +35,27 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 20vw;
+    max-height: 20vw;
     width: 100%;
+    overflow-y: scroll;
 }
 .message{
+    position: relative;
     width: fit-content;
     display: flex;
+    flex-direction: column;
     margin: 1.2rem 0;
     padding: .9rem;
     list-style-type: none;
     color: black;
     background: #f8f4f0;
     font-size: .9rem;
+}
+.message > .time {
+    position: absolute;
+    bottom: -55%;
+    right: 2%;
+    color: #bbb;
 }
 .message.recieved {
     align-self: flex-end;
