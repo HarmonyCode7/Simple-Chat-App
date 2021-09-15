@@ -9,6 +9,12 @@ server.listen(port, () => console.log(`Server listening on http://localhost:${po
 
 app.use('/', express.static('public/'));
 
+const namespaces = [
+    'cpptalks',
+    'javascript',
+    'pythonhaters',
+    'general'
+];
 
 io.on('connection', socket => {
     socket.on('message', message => {

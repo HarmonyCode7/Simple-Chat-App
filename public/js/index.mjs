@@ -1,12 +1,34 @@
 import { dom } from './dom.mjs';
 
+function commandToEmoji(message) {
+    let emojiCommands = [
+        {command: ':smile', emoji: '😁'},
+        {command: ":shock", emoji: '😱'},
+        {command: ":laugh", emoji: '😂'},
+        {command: ':love', emoji: '🥰'},
+        {command: ':upset', emoji: '😫'},
+        {command: ':wink', emoji: '😉'}
+    ]
+
+    emojiCommands.forEach(command => {
+        message = message.replaceAll(command.command, command.emoji);
+        console.log(message);
+    })
+    console.log(message);
+    return message;
+}
+
+function makeLink(message, condition) {
+    return message.replace(condition, "<a href='' class='links'>&nbsp;$&&nbsp;</a>");
+}
+
 class ChatApp {
     constructor(socket = io()) {
         this.socket = socket;
     }
 
-    send(message) {
-        this.socket.emit('message', message);
+    send(message, message_event='message') {
+        this.socket.emit(message_event, message);
     }
 
     recieve(callback) {
@@ -41,15 +63,32 @@ class ChatUi {
     }
 
     chatMessage(message, type=ChatUi.MESSAGE_SENT) {
+        if(message.length < 1)
+            return;
         if(!ChatUi.isValidType(type)) {
             throw new Error('Failed to create chat message invalid message type: '+ type);
         }
+        //change emoji commands to actual emojis
+        message = commandToEmoji(message);
+        //transform links with https 
+        let http_link = new RegExp(/http:\/\/(?:\S)+/, 'g');
+        message = makeLink(message, http_link);
+        let https_link = new RegExp(/https:\/\/(?:\S)+/, 'g');
+        message = makeLink(message, http_link);
+        //transform @tags to links using achor tags
+        message = makeLink(message, /@(?:\S)+/g);
+        
         let chatElement = dom.makeHTMLElement('li', 
-        {class: `message ${type}`});
+        {class: `chatroom-message ${type}`});
         let timeElement = dom.makeHTMLElement('span', {class: 'time'});
         let d = new Date();
-        timeElement.innerText = `${d.getHours()}:${d.getMinutes()}`;
-        chatElement.innerText = message;
+        console.log(d.getHours());
+        console.log(d.getHours() < 10);
+        let hour = Number(d.getHours()) < 10 ? `0${d.getHours()}` : d.getHours();
+        let minute = Number(d.getMinutes()) < 10 ? `0${d.getMinutes()}` : d.getMinutes();
+
+        timeElement.innerText = `${hour}:${minute}`;
+        chatElement.innerHTML = message;
         chatElement.appendChild(timeElement);
         return chatElement;
     }
@@ -68,36 +107,46 @@ class App {
     }
 
     main() {
+
         let chatApp = new ChatApp();
-        let chatUi = new ChatUi();
+        let chatUI = new ChatUi();
+        let chatinput_message = dom.query('.chatinput-message');
+        let chatroom_messages = dom.query('.chatroom-messages'); //the timeline for chat messages
+        let chatroom_message = dom.query('.chatroom-message');
+        let chatbutton_send_message = dom.query('.chatbutton-send-message');
 
-        let messages = dom.query('.messages-timeline');
-        let message_input = dom.query('.message-input');
-        let send_message_btn = dom.query('.send-message-btn');
-
-        let sendMessage = () => {
-            let message = message_input.value;
+        
+        //send message when we click send
+        chatbutton_send_message.addEventListener('click', function () {
+            let message = chatinput_message.value;
             if(message.length < 1)
                 return;
-            message_input.value = "";
             chatApp.send(message);
-            let uiMessage = chatUi.chatMessage(message, ChatUi.MESSAGE_SENT);
-            messages.appendChild(uiMessage);
-        }
-
-        chatApp.recieve(message => {
-            let uiMessage = chatUi.chatMessage(message, ChatUi.MESSAGE_RECIEVED);
-            messages.appendChild(uiMessage);
-        });
-
-        send_message_btn.addEventListener('click', sendMessage);
-
-        message_input.addEventListener('keypress', event => {
-            let isEnterKey = event.key.toLowerCase() === 'Enter'.toLowerCase();
-            if(isEnterKey) {
-                sendMessage();
-            }
+            chatinput_message.value = ""; //clear input
+            let uiMessage = chatUI.chatMessage(message);
+            chatroom_messages.appendChild(uiMessage);
         })
+
+        chatinput_message.addEventListener('keypress', event => {
+            if(event.key.toLowerCase() !== 'enter')
+                chatApp.send('name of user typing','istyping');
+            else {
+                let message = chatinput_message.value;
+                let uiMessage = chatUI.chatMessage(message, ChatUi.MESSAGE_SENT);
+                chatroom_messages.appendChild(uiMessage);
+                chatApp.send(message);
+                chatinput_message.value = "";
+            }
+
+        })
+
+        //listen for incomming messages
+        chatApp.recieve(message => {
+            if(message.length < 1)
+                return;
+            let uiMessage = chatUI.chatMessage(message, ChatUi.MESSAGE_RECIEVED);
+            chatroom_messages.appendChild(uiMessage);
+        });
 
     }
 }

@@ -10,14 +10,22 @@
     <script src="https://kit.fontawesome.com/63afa238c0.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="room-header">C++ Talks</div>
-        <ul class="messages-timeline">
-           <li class="message recieved">How to compile with clang<span class="time">11:34</span></li>
-        </ul>
-        <div class="messaging-control">
-            <input type="text" class="message-input"><span class="emojis"><i class="fas fa-laugh-beam"></i></span>
-            <button class="send-message-btn" type="submit">send <i class="fas fa-paper-plane send-icon"></i> </button>
+    <div class="app-container">
+        <div class="chatroom-container">
+            <div class="chatroom-header">
+                Modern C++ Talk
+            </div>
+            <ul class="chatroom-messages">
+                <!-- dynamically add room messages here -->
+            </ul>
+            <div class="chatinput-controls">
+                <div>
+                    <input type="text" class="chatinput-message">
+                </div>
+                <div>
+                    <button class="chatbutton-send-message">send  <i class="far fa-paper-plane"></i></button>
+                </div>
+            </div>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
